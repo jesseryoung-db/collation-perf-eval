@@ -1,0 +1,17 @@
+variables:
+  catalog:
+    description: Target catalog for the test data and results
+    default: my_catalog
+  schema:
+    description: Target schema for the test data and results
+    default: default
+  spark_version:
+    description: Databricks Runtime for the eval clusters
+    default: 18.2.x-scala2.13
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://my-workspace.cloud.databricks.com

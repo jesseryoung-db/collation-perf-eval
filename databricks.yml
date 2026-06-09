@@ -1,0 +1,57 @@
+bundle:
+  name: collation-perf-eval
+
+include:
+  - targets.yml
+
+resources:
+  jobs:
+    collation_perf_eval:
+      name: collation-perf-eval
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: generate
+          notebook_task:
+            notebook_path: src/generate.py
+        - task_key: rtrim
+          depends_on:
+            - task_key: generate
+          notebook_task:
+            notebook_path: src/eval_rtrim.py
+            base_parameters:
+              variant_name: rtrim
+              run_timestamp: "{{job.start_time.iso_datetime}}"
+          new_cluster: &perf_cluster
+            spark_version: ${var.spark_version}
+            node_type_id: i3.4xlarge
+            num_workers: 4
+            runtime_engine: PHOTON
+            data_security_mode: SINGLE_USER
+            single_user_name: ${workspace.current_user.userName}
+            spark_conf:
+              spark.databricks.io.cache.enabled: "false"
+            aws_attributes:
+              availability: ON_DEMAND
+              first_on_demand: 5
+        - task_key: default
+          depends_on:
+            - task_key: generate
+          notebook_task:
+            notebook_path: src/eval_default.py
+            base_parameters:
+              variant_name: default
+              run_timestamp: "{{job.start_time.iso_datetime}}"
+          new_cluster: *perf_cluster
+        - task_key: query_collate
+          depends_on:
+            - task_key: generate
+          notebook_task:
+            notebook_path: src/eval_query_collate.py
+            base_parameters:
+              variant_name: query_collate
+              run_timestamp: "{{job.start_time.iso_datetime}}"
+          new_cluster: *perf_cluster
