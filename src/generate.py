@@ -3,7 +3,6 @@ catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 spark.sql(f"USE CATALOG {catalog}")
 spark.sql(f"USE SCHEMA {schema}")
-spark.sql(f"ALTER SCHEMA {catalog}.{schema} DISABLE PREDICTIVE OPTIMIZATION")
 spark.sql("""CREATE TABLE IF NOT EXISTS collation_perf_results (
   variant_name STRING, run BIGINT, seconds DOUBLE, run_timestamp TIMESTAMP)""")
 
